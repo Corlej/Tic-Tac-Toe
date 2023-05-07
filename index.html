@@ -13,16 +13,47 @@
         
 </head>
 <body>
-    <div class="header">
-    </div>
     <div class="content">
         <div class="container">
-            <div class="markerGroup">
+            <div class="playerSelectGroup">
+                <div class="playerSelectHeader">PLAYER SELECT</div>
+                <div class="playerSwitch" id="playerSwitch">
+                    <div class="onePlayer" id="onePlayer">
+                        <svg version="1.1" id="_x32_" xmlns="http://www.w3.org/2000/svg" xmlns:xlink="http://www.w3.org/1999/xlink" 
+                            viewBox="0 0 512 512"  xml:space="preserve">
+                                <path class="st0" d="M256,265.308c73.252,0,132.644-59.391,132.644-132.654C388.644,59.412,329.252,0,256,0
+                                    c-73.262,0-132.643,59.412-132.643,132.654C123.357,205.917,182.738,265.308,256,265.308z"/>
+                                <path class="st0" d="M425.874,393.104c-5.922-35.474-36-84.509-57.552-107.465c-5.829-6.212-15.948-3.628-19.504-1.427
+                                    c-27.04,16.672-58.782,26.399-92.819,26.399c-34.036,0-65.778-9.727-92.818-26.399c-3.555-2.201-13.675-4.785-19.505,1.427
+                                    c-21.55,22.956-51.628,71.991-57.551,107.465C71.573,480.444,164.877,512,256,512C347.123,512,440.427,480.444,425.874,393.104z"/>
+                        </svg>
+                    </div>
+                    <div class="twoPlayer" id="twoPlayer">
+                        <svg version="1.1" id="_x32_" xmlns="http://www.w3.org/2000/svg" xmlns:xlink="http://www.w3.org/1999/xlink" 
+                            viewBox="0 0 512 512"  xml:space="preserve">
+                            <path class="st0" d="M256,265.308c73.252,0,132.644-59.391,132.644-132.654C388.644,59.412,329.252,0,256,0
+                                c-73.262,0-132.643,59.412-132.643,132.654C123.357,205.917,182.738,265.308,256,265.308z"/>
+                            <path class="st0" d="M425.874,393.104c-5.922-35.474-36-84.509-57.552-107.465c-5.829-6.212-15.948-3.628-19.504-1.427
+                                c-27.04,16.672-58.782,26.399-92.819,26.399c-34.036,0-65.778-9.727-92.818-26.399c-3.555-2.201-13.675-4.785-19.505,1.427
+                                c-21.55,22.956-51.628,71.991-57.551,107.465C71.573,480.444,164.877,512,256,512C347.123,512,440.427,480.444,425.874,393.104z"/>
+                        </svg>
+                        <svg version="1.1" id="_x32_" xmlns="http://www.w3.org/2000/svg" xmlns:xlink="http://www.w3.org/1999/xlink" 
+                            viewBox="0 0 512 512"  xml:space="preserve">
+                            <path class="st0" d="M256,265.308c73.252,0,132.644-59.391,132.644-132.654C388.644,59.412,329.252,0,256,0
+                                c-73.262,0-132.643,59.412-132.643,132.654C123.357,205.917,182.738,265.308,256,265.308z"/>
+                            <path class="st0" d="M425.874,393.104c-5.922-35.474-36-84.509-57.552-107.465c-5.829-6.212-15.948-3.628-19.504-1.427
+                                c-27.04,16.672-58.782,26.399-92.819,26.399c-34.036,0-65.778-9.727-92.818-26.399c-3.555-2.201-13.675-4.785-19.505,1.427
+                                c-21.55,22.956-51.628,71.991-57.551,107.465C71.573,480.444,164.877,512,256,512C347.123,512,440.427,480.444,425.874,393.104z"/>
+                        </svg>
+                    </div>
+                    <div class="playerSelector" id="playerSelector"></div>
+                </div>
+            </div>
+            <div class="markerGroup" id="markerGroup">
                 <div class="selectionHeader">SELECT A PIECE</div>
                 <div class="markerSwitch">
                     <div class="marker x" id="x">
-                        <svg fill="#000000" version="1.1" id="Layer_1" xmlns="http://www.w3.org/2000/svg" xmlns:xlink="http://www.w3.org/1999/xlink" 
-                            viewBox="0 0 100 100" enable-background="new 0 0 100 100" xml:space="preserve">
+                        <svg id="xSvg" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 100 100">
                             <path d="M84.707,68.752L65.951,49.998l18.75-18.752c0.777-0.777,0.777-2.036,0-2.813L71.566,15.295
                                 c-0.777-0.777-2.037-0.777-2.814,0L49.999,34.047l-18.75-18.752c-0.746-0.747-2.067-0.747-2.814,0L15.297,28.431
                                 c-0.373,0.373-0.583,0.88-0.583,1.407c0,0.527,0.21,1.034,0.583,1.407L34.05,49.998L15.294,68.753
@@ -32,16 +63,14 @@
                         </svg>
                     </div>
                     <div class="marker o" id="o">
-                        <svg fill="#000000" id="Layer_1" data-name="Layer 1"
-                        xmlns="http://www.w3.org/2000/svg" viewBox="0 0 16 16">
-                            <path class="cls-1" d="M8,2a6,6,0,1,0,6,6A6,6,0,0,0,8,2Zm0,9.42857A3.42857,3.42857,0,1,1,11.42857,8,3.42857,3.42857,0,0,1,8,11.42857Z"/>
+                        <svg id="oSvg" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 16 16">
+                            <path d="M8,2a6,6,0,1,0,6,6A6,6,0,0,0,8,2Zm0,9.42857A3.42857,3.42857,0,1,1,11.42857,8,3.42857,3.42857,0,0,1,8,11.42857Z"/>
                         </svg>
                     </div>
                     <div class="markerSelector" id="markerSelector"></div>
                 </div>
-                <div class="reminder" id="reminder">X GOES FIRST</div>
             </div>
-            <div class="difficultyGroup">
+            <div class="difficultyGroup" id="difficultyGroup">
                 <div class="difficultyText">DIFFICULTY</div>
                 <div class="difficultySwitch">
                     <div class="easy" id="easy">
@@ -73,8 +102,24 @@
             </div>
             <button class="startButton">START GAME</button>
         </div>
-    </div>
-    <div class="footer">
+    
+        <div class="board">
+            <div class="row 1">
+                <div class="cell 1"></div>
+                <div class="cell 2"></div>
+                <div class="cell 3"></div>
+            </div>
+            <div class="row 2">
+                <div class="cell 1"></div>
+                <div class="cell 2"></div>
+                <div class="cell 3"></div>
+            </div>
+            <div class="row 3">
+                <div class="cell 1"></div>
+                <div class="cell 2"></div>
+                <div class="cell 3"></div>
+            </div>
+        </div>
     </div>
 </body>
 <script src="script.js"></script>
