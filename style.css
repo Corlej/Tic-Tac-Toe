@@ -157,6 +157,7 @@ body {
 
 #xSvgHover path,
 #oSvgHover path {
+    stroke: var(--fourth-color);
     fill: var(--first-color);
 }
 
@@ -300,7 +301,7 @@ path {
     width: 360px;
     height: auto;
     margin: 5em auto;
-    display: flex;
+    display: none;
     flex-wrap: wrap;
 }
   
@@ -322,6 +323,13 @@ path {
 .cell path {
     height: 100px;
     width: 100px;
+
+}
+
+.oMarker path,
+.xMarker path{
+    stroke: var(--fourth-color);
+    fill: var(--fourth-color);
 }
 
 .cell:not(:nth-child(3n)) {
@@ -331,6 +339,16 @@ path {
   .row:not(:last-child) {
     border-bottom: 5px solid var(--third-color);
   }
+
+.resetButton {
+    display: none;
+    cursor: pointer;
+}
+
+.notArrow {
+    fill: none;
+    stroke-width: 3px;
+}
 
 .winner {
     height: auto;
