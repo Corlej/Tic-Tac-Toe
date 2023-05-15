@@ -1,7 +1,12 @@
 let gameMode = '';
 let marker = '';
+let defaultState = '';
 let difficulty = '';
-
+const winningCombinations = [
+  [0, 1, 2], [3, 4, 5], [6, 7, 8],
+  [0, 3, 6], [1, 4, 7], [2, 5, 8],
+  [0, 4, 8], [2, 4, 6]
+];
 // Get references to HTML elements
 const singlePlayerBtn = document.getElementById('singlePlayerBtn');
 const twoPlayerBtn = document.getElementById('twoPlayerBtn');
@@ -52,47 +57,39 @@ resetBtn.addEventListener('click', () => {
 });
 
 singlePlayerBtn.addEventListener('click', () => {
-  console.log('single')
   onePlayerActive();
   xActive();
   easyActive();
 });
 
 twoPlayerBtn.addEventListener('click', () => {
-  console.log('multi')
   multiPlayerActive();
   difficulty = '';
 });
 
 xMarkerBtn.addEventListener('click', () => {
-  console.log('X')
   xActive();
 });
 
 oMarkerBtn.addEventListener('click', () => {
-  console.log('o')
   oActive();
 });
 
 easyBtn.addEventListener('click', () => {
-  console.log('easy')
   easyActive();
 });
 
 mediumBtn.addEventListener('click', () => {
-  console.log('medium')
   mediumActive();
 });
 
 hardBtn.addEventListener('click', () => {
-  console.log('hard')
   hardActive();
 });
 
 startBtn.addEventListener('click', () => {
 showBoard();
 startGame(gameMode, marker, difficulty);
-console.log(gameMode, marker, difficulty)
   if (gameMode === 'multi') {
     marker = 'X'
   };
@@ -117,6 +114,7 @@ function onePlayerActive() {
   difficultyGroup.style.display = 'flex';
   gameMode = 'single';
   marker = 'X';
+  defaultState = 'X';
   difficulty = 'easy';
 };
 
@@ -141,6 +139,7 @@ function xActive() {
   xMarker.style.stroke = xMarker.style.fill = 'var(--first-color)';
   oMarker.style.stroke = oMarker.style.fill = 'var(--third-color)';
   marker = 'X';
+  defaultState = 'X'
 };
 
 function oActive() {
@@ -148,6 +147,7 @@ function oActive() {
   xMarker.style.stroke = xMarker.style.fill = 'var(--third-color)';
   oMarker.style.stroke = oMarker.style.fill = 'var(--first-color)';
   marker = 'O';
+  defaultState = 'O'
 };
 
 
@@ -207,6 +207,23 @@ function hardActive() {
   difficulty = 'hard';
 };
 
+function computerFirstMove() {
+  if (gameMode === 'single' && marker === 'O') {
+    const xSvg = document.createElementNS ('http://www.w3.org/2000/svg', 'svg');
+    xSvg.setAttribute('viewBox', '0 0 100 100');
+    xSvg.setAttribute('id', 'xSvg');
+    xSvg.setAttribute('class', 'xMarker');
+    xSvg.innerHTML = `<path d='M84.707,68.752L65.951,49.998l18.75-18.752c0.777-0.777,0.777-2.036,0-2.813L71.566,15.295
+    c-0.777-0.777-2.037-0.777-2.814,0L49.999,34.047l-18.75-18.752c-0.746-0.747-2.067-0.747-2.814,0L15.297,28.431
+    c-0.373,0.373-0.583,0.88-0.583,1.407c0,0.527,0.21,1.034,0.583,1.407L34.05,49.998L15.294,68.753
+    c-0.373,0.374-0.583,0.88-0.583,1.407c0,0.528,0.21,1.035,0.583,1.407l13.136,13.137c0.373,0.373,0.881,0.583,1.41,0.583
+    c0.525,0,1.031-0.21,1.404-0.583l18.755-18.755l18.756,18.754c0.389,0.388,0.896,0.583,1.407,0.583c0.511,0,1.019-0.195,1.408-0.583
+    l13.138-13.137C85.484,70.789,85.484,69.53,84.707,68.752z'/>`;
+    const emptyCells = Array.from(cells).filter(cell => !cell.children[0]);
+    const randomCell = emptyCells[Math.floor(Math.random() * emptyCells.length)];
+    randomCell.appendChild(xSvg);
+  };
+};
 
 //probably needs adjusted//
 function showBoard() {
@@ -222,11 +239,11 @@ function showBoard() {
   function addResetButton() {
     resetBtn.style.display = 'block';
   }
+  computerFirstMove();
 }; 
 
 // Function to start game with current settings
 function startGame() {
-      
   cells.forEach(cell => {
     const xSvg = document.createElementNS ('http://www.w3.org/2000/svg', 'svg');
     xSvg.setAttribute('viewBox', '0 0 100 100');
@@ -271,7 +288,7 @@ function startGame() {
           cell.appendChild(xSvgHover);
         }
       }
-      else {
+      else if (marker === 'O') {
         if (cell.contains(xSvgHover)) {
           cell.removeChild(xSvgHover);
         }
@@ -293,28 +310,25 @@ function startGame() {
             otherCell.removeChild(oSvgHover);
           });
         });
-        if (cell.contains(xSvg)) {
-          return;
-        }
-        if (cell.contains(oSvg)) {
+        if (cell.querySelector('.xMarker') || cell.querySelector ('.oMarker')) {
           return;
         }
         if (gameMode === 'multi') {
           marker = 'O';
         }
-        else if (difficulty === 'easy') {
-          computerTurnEasy();
+        if (difficulty === 'easy') {
+          setTimeout(computerTurnEasy, 500);
         }
-        else if (difficulty === 'medium') {
-          computerTurnMedium();
+        if (difficulty === 'medium') {
+          setTimeout(computerTurnMedium, 500);
         }
-        else if (difficulty === 'hard') {
-          computerTurnHard();
+        if (difficulty === 'hard') {
+          setTimeout(computerTurnHard, 500);
         }
         cell.appendChild(xSvg);
         checkWinCondition(cells);
       }
-      if (marker === 'O') {
+      else if (marker === 'O') {
         cells.forEach(otherCell => {
           const xSvgHovers = otherCell.querySelectorAll('.xSvgHover');
           const oSvgHovers = otherCell.querySelectorAll('.oSvgHover');
@@ -325,65 +339,154 @@ function startGame() {
             otherCell.removeChild(oSvgHover);
           });
         });
-        if (cell.contains(xSvg)) {
-          return;
-        }
-        if (cell.contains(oSvg)) {
+        if (cell.querySelector('.xMarker') || cell.querySelector ('.oMarker')) {
           return;
         }
         if (gameMode === 'multi') {
           marker = 'X';
         }
         if (difficulty === 'easy') {
-          computerTurnEasy();
+          setTimeout(computerTurnEasy, 500);
         }
         if (difficulty === 'medium') {
-          computerTurnMedium();
+          setTimeout(computerTurnMedium, 500);
         }
         if (difficulty === 'hard') {
-          computerTurnHard();
+          setTimeout(computerTurnHard, 300);
         }
         cell.appendChild(oSvg);
         checkWinCondition(cells);
       };
+    });
+    
+    function computerTurnEasy() {
+      const emptyCells = Array.from(cells).filter(cell => !cell.children[0]);
+      if (emptyCells.length === 0) {
+        return;
+      }
+      const randomCell = emptyCells[Math.floor(Math.random() * emptyCells.length)];
+      if (marker === 'X') {
+        randomCell.appendChild(oSvg);
+      }
+      if (marker === 'O') {
+        randomCell.appendChild(xSvg);
+      }
+      checkWinCondition(cells);
+    };
 
-      function checkWinCondition(cells) {
-        const winningCombinations = [
-          [0, 1, 2], [3, 4, 5], [6, 7, 8],
-          [0, 3, 6], [1, 4, 7], [2, 5, 8],
-          [0, 4, 8], [2, 4, 6]
-        ];
-          
+    function computerTurnMedium() {
+      const emptyCells = Array.from(cells).filter(cell => !cell.children[0]);
+
+      if (emptyCells.length === 0) {
+        return;
+      }
+
+      const randomCell = emptyCells[Math.floor(Math.random() * emptyCells.length)];
+
+      let moveMade = false;
+
+      if (marker === 'X') {
         for (const combination of winningCombinations) {
           const symbols = combination.map(index => cells[index].children[0]);
-          if (symbols.every(symbol => symbol?.classList.contains('xMarker'))) {
-            marker = 'X';
-            declareWinner();
-            return;
-          } 
-          if (symbols.every(symbol => symbol?.classList.contains('oMarker'))) {
-            marker = 'O';
-            declareWinner();
-            return;
+          const xMarkers = symbols.filter(symbol => symbol?.classList.contains('xMarker'));
+          const oMarkers = symbols.filter(symbol => symbol?.classList.contains('oMarker'));
+
+          if (oMarkers.length >= 2) {
+            const emptyCellIndex = combination.find(index => !cells[index].children[0]);
+            if (emptyCellIndex !== undefined) {
+              cells[emptyCellIndex].appendChild(oSvg);
+              checkWinCondition(cells);
+              console.log('i made a move to win!');
+              moveMade = true;
+              break;
+            }
           }
-          if (Array.from(cells).every(cell => cell.children[0] && (cell.children[0].classList.contains('xMarker') || cell.children[0].classList.contains('oMarker')))) {
-            announceWinner.setAttribute('class', 'winner');
-            document.querySelector('.content').appendChild(announceWinner);
-            announceWinner.innerHTML = 'TIE GAME!'
-          };
-        };     
-      };       
-    });
+
+          if (xMarkers.length >= 2) {
+            const emptyCellIndex = combination.find(index => !cells[index].children[0]);
+            if (emptyCellIndex !== undefined) {
+              cells[emptyCellIndex].appendChild(oSvg);
+              checkWinCondition(cells);
+              console.log('i made a move to defend!');
+              moveMade = true;
+              break;
+            }
+          }
+        }
+
+        if (!moveMade) {
+          randomCell.appendChild(oSvg);
+          console.log('i made a random move!!!')
+          checkWinCondition(cells);
+        }
+      }
+
+      else if (marker === 'O') {
+        for (const combination of winningCombinations) {
+          const symbols = combination.map(index => cells[index].children[0]);
+          const xMarkers = symbols.filter(symbol => symbol?.classList.contains('xMarker'));
+          const oMarkers = symbols.filter(symbol => symbol?.classList.contains('oMarker'));    
+
+          if (xMarkers.length >= 2) {
+            const emptyCellIndex = combination.find(index => !cells[index].children[0]);
+            if (emptyCellIndex !== undefined) {
+              cells[emptyCellIndex].appendChild(xSvg);
+              checkWinCondition(cells);
+              console.log('i made a move to win!')
+              moveMade = true;
+              break;
+            }
+          }
+          else if (oMarkers.length >= 2) {
+            const emptyCellIndex = combination.find(index => !cells[index].children[0]);
+            if (emptyCellIndex !== undefined) {
+              cells[emptyCellIndex].appendChild(xSvg);
+              checkWinCondition(cells);
+              console.log('i made a move to defend!')
+              moveMade = true;
+              break;
+            }
+          }
+        }
+        if (!moveMade) {
+          randomCell.appendChild(xSvg);
+          console.log('i made a random move!!!')
+          checkWinCondition(cells);
+        }
+      }
+    };
+
+    function checkWinCondition(cells) {
+      for (const combination of winningCombinations) {
+        const symbols = combination.map(index => cells[index].children[0]);
+        if (symbols.every(symbol => symbol?.classList.contains('xMarker'))) {
+          marker = 'X';
+          declareWinner();
+          return;
+        } 
+        if (symbols.every(symbol => symbol?.classList.contains('oMarker'))) {
+          marker = 'O';
+          declareWinner();
+          return;
+        }
+        
+        if (Array.from(cells).every(cell => cell.children[0] && (cell.children[0].classList.contains('xMarker') || cell.children[0].classList.contains('oMarker')))) {
+          announceWinner.setAttribute('class', 'winner');
+          document.querySelector('.content').appendChild(announceWinner);
+          announceWinner.innerHTML = 'TIE GAME!'
+        };
+      };
+    };
   });
 };
 
 function declareWinner() {
-  console.log(marker)
   announceWinner.setAttribute('class', 'winner');
   document.querySelector('.content').appendChild(announceWinner);
   if (marker === ('X') || ('O')) {
     announceWinner.innerHTML = marker + ' IS THE WINNER!';
-  };
+  }
+  marker = '';
 };
 
 function resetGame() {
@@ -392,6 +495,9 @@ function resetGame() {
       cell.removeChild(cell.firstChild);
     }
   });
-  marker = 'X';
+  marker = defaultState;
   announceWinner.innerHTML = '';
-}
+  if (marker === 'O') {
+    computerFirstMove();
+  };
+};
