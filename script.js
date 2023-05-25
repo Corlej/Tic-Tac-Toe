@@ -2,11 +2,15 @@ let gameMode = '';
 let marker = '';
 let defaultState = '';
 let difficulty = '';
+let moveMade = false;
+let firstMove = false;
+let prio = false;
 const winningCombinations = [
   [0, 1, 2], [3, 4, 5], [6, 7, 8],
   [0, 3, 6], [1, 4, 7], [2, 5, 8],
   [0, 4, 8], [2, 4, 6]
 ];
+
 // Get references to HTML elements
 const singlePlayerBtn = document.getElementById('singlePlayerBtn');
 const twoPlayerBtn = document.getElementById('twoPlayerBtn');
@@ -44,6 +48,18 @@ document.getElementById('hardBtn').addEventListener('click', hardActive);
 // Add event listeners to buttons
 
 resetBtn.addEventListener('click', () => {
+  resetColors();
+  resetGame();
+});
+
+document.addEventListener('keydown', (event) => {
+  if (event.code === 'Space') {
+    resetColors();
+    resetGame();
+  }
+});
+
+function resetColors() {
   arrow.style.fill = 'var(--fourth-color)';
   arrow.style.stroke = 'var(--fourth-color)';
   notArrow.style.stroke = 'var(--fourth-color)';
@@ -53,8 +69,7 @@ resetBtn.addEventListener('click', () => {
     arrow.style.stroke = 'var(--third-color)';
     notArrow.style.stroke = 'var(--third-color)';
   }, 100);
-  resetGame();
-});
+}
 
 singlePlayerBtn.addEventListener('click', () => {
   onePlayerActive();
@@ -148,6 +163,7 @@ function oActive() {
   oMarker.style.stroke = oMarker.style.fill = 'var(--first-color)';
   marker = 'O';
   defaultState = 'O'
+  firstMove = true;
 };
 
 
@@ -221,7 +237,16 @@ function computerFirstMove() {
     l13.138-13.137C85.484,70.789,85.484,69.53,84.707,68.752z'/>`;
     const emptyCells = Array.from(cells).filter(cell => !cell.children[0]);
     const randomCell = emptyCells[Math.floor(Math.random() * emptyCells.length)];
-    randomCell.appendChild(xSvg);
+    if (difficulty !== 'hard') {
+      randomCell.appendChild(xSvg);
+    }
+    else {
+      const cornerCells = [cells[0], cells[2], cells[6], cells[8]]; 
+      const emptyCorners = cornerCells.filter(cell => !cell.children[0]); 
+      const randomCorner = emptyCorners[Math.floor(Math.random() * emptyCorners.length)];
+      randomCorner.appendChild(xSvg);
+      console.log('I took a corner cell.'); 
+    }
   };
 };
 
@@ -239,7 +264,10 @@ function showBoard() {
   function addResetButton() {
     resetBtn.style.display = 'block';
   }
-  computerFirstMove();
+  if (firstMove === true) {
+    computerFirstMove();
+    firstMove = false;
+  };
 }; 
 
 // Function to start game with current settings
@@ -278,100 +306,119 @@ function startGame() {
     oSvgHover.setAttribute('id', 'oSvgHover');
     oSvgHover.setAttribute('class', 'oSvgHover');
     oSvgHover.innerHTML = `<path d='M8,2a6,6,0,1,0,6,6A6,6,0,0,0,8,2Zm0,9.42857A3.42857,3.42857,0,1,1,11.42857,8,3.42857,3.42857,0,0,1,8,11.42857Z'/>`;
-
-    cell.addEventListener('mouseover', () => {
-      if (marker === 'X') {
-        if(cell.contains(oSvgHover)) {
-          cell.removeChild(oSvgHover);
+    
+    if (!moveMade) {
+      cell.addEventListener('mouseover', () => {
+        if (marker === 'X') {
+          if(cell.contains(oSvgHover)) {
+            cell.removeChild(oSvgHover);
+          }
+            if (cell.childElementCount === 0) {
+            cell.appendChild(xSvgHover);
+          }
         }
+        else if (marker === 'O') {
+          if (cell.contains(xSvgHover)) {
+            cell.removeChild(xSvgHover);
+          }
           if (cell.childElementCount === 0) {
-          cell.appendChild(xSvgHover);
+            cell.appendChild(oSvgHover);
+          }
         }
-      }
-      else if (marker === 'O') {
-        if (cell.contains(xSvgHover)) {
-          cell.removeChild(xSvgHover);
-        }
-        if (cell.childElementCount === 0) {
-          cell.appendChild(oSvgHover);
-        }
-      }
-    });
+      });
 
-    cell.addEventListener('click', () => {
-      if (marker === 'X') {
-        cells.forEach(otherCell => {
-          const xSvgHovers = otherCell.querySelectorAll('.xSvgHover');
-          const oSvgHovers = otherCell.querySelectorAll('.oSvgHover');
-          xSvgHovers.forEach(xSvgHover => {
-            otherCell.removeChild(xSvgHover);
-          });
-          oSvgHovers.forEach(oSvgHover => {
-            otherCell.removeChild(oSvgHover);
-          });
-        });
-        if (cell.querySelector('.xMarker') || cell.querySelector ('.oMarker')) {
+      cell.addEventListener('click', () => {
+        if (moveMade) {
           return;
         }
-        if (gameMode === 'multi') {
-          marker = 'O';
-        }
-        if (difficulty === 'easy') {
-          setTimeout(computerTurnEasy, 500);
-        }
-        if (difficulty === 'medium') {
-          setTimeout(computerTurnMedium, 500);
-        }
-        if (difficulty === 'hard') {
-          setTimeout(computerTurnHard, 500);
-        }
-        cell.appendChild(xSvg);
-        checkWinCondition(cells);
-      }
-      else if (marker === 'O') {
-        cells.forEach(otherCell => {
-          const xSvgHovers = otherCell.querySelectorAll('.xSvgHover');
-          const oSvgHovers = otherCell.querySelectorAll('.oSvgHover');
-          xSvgHovers.forEach(xSvgHover => {
-            otherCell.removeChild(xSvgHover);
+        else if (marker === 'X') {
+          cells.forEach(otherCell => {
+            const xSvgHovers = otherCell.querySelectorAll('.xSvgHover');
+            const oSvgHovers = otherCell.querySelectorAll('.oSvgHover');
+            xSvgHovers.forEach(xSvgHover => {
+              otherCell.removeChild(xSvgHover);
+            });
+            oSvgHovers.forEach(oSvgHover => {
+              otherCell.removeChild(oSvgHover);
+            });
           });
-          oSvgHovers.forEach(oSvgHover => {
-            otherCell.removeChild(oSvgHover);
+          if (cell.querySelector('.xMarker') || cell.querySelector ('.oMarker')) {
+            return;
+          }
+          if (gameMode === 'multi') {
+            marker = 'O';
+          }
+          if (difficulty === 'easy') {
+            setTimeout(computerTurnEasy, 300);
+          }
+          if (difficulty === 'medium') {
+            setTimeout(computerTurnMedium, 300);
+          }
+          if (difficulty === 'hard') {
+            setTimeout(computerTurnHard, 300);
+          }
+          cell.appendChild(xSvg);
+          checkWinCondition(cells);
+          console.log(prio)
+          if (gameMode !== 'multi') {
+            moveMade = true;
+            prio = false;
+            return;
+          }
+        }
+        else if (marker === 'O') {
+          cells.forEach(otherCell => {
+            const xSvgHovers = otherCell.querySelectorAll('.xSvgHover');
+            const oSvgHovers = otherCell.querySelectorAll('.oSvgHover');
+            xSvgHovers.forEach(xSvgHover => {
+              otherCell.removeChild(xSvgHover);
+            });
+            oSvgHovers.forEach(oSvgHover => {
+              otherCell.removeChild(oSvgHover);
+            });
           });
-        });
-        if (cell.querySelector('.xMarker') || cell.querySelector ('.oMarker')) {
-          return;
-        }
-        if (gameMode === 'multi') {
-          marker = 'X';
-        }
-        if (difficulty === 'easy') {
-          setTimeout(computerTurnEasy, 500);
-        }
-        if (difficulty === 'medium') {
-          setTimeout(computerTurnMedium, 500);
-        }
-        if (difficulty === 'hard') {
-          setTimeout(computerTurnHard, 300);
-        }
-        cell.appendChild(oSvg);
-        checkWinCondition(cells);
-      };
-    });
+          if (cell.querySelector('.xMarker') || cell.querySelector ('.oMarker')) {
+            return;
+          }
+          if (gameMode === 'multi') {
+            marker = 'X';
+          }
+          if (difficulty === 'easy') {
+            setTimeout(computerTurnEasy, 300);
+          }
+          if (difficulty === 'medium') {
+            setTimeout(computerTurnMedium, 300);
+          }
+          if (difficulty === 'hard') {
+            setTimeout(computerTurnHard, 300);
+          }
+          cell.appendChild(oSvg);
+          checkWinCondition(cells);
+          if (gameMode !== 'multi') {
+            moveMade = true;
+            prio = false;
+            return;
+          }
+        };
+    })};
     
     function computerTurnEasy() {
-      const emptyCells = Array.from(cells).filter(cell => !cell.children[0]);
-      if (emptyCells.length === 0) {
-        return;
-      }
-      const randomCell = emptyCells[Math.floor(Math.random() * emptyCells.length)];
-      if (marker === 'X') {
-        randomCell.appendChild(oSvg);
-      }
-      if (marker === 'O') {
-        randomCell.appendChild(xSvg);
-      }
-      checkWinCondition(cells);
+      if (moveMade) {
+        const emptyCells = Array.from(cells).filter(cell => !cell.children[0]);
+        if (emptyCells.length === 0) {
+          return;
+        }
+        const randomCell = emptyCells[Math.floor(Math.random() * emptyCells.length)];
+        if (marker === 'X') {
+          randomCell.appendChild(oSvg);
+        }
+        if (marker === 'O') {
+          randomCell.appendChild(xSvg);
+        }
+        moveMade = false;
+        checkWinCondition(cells);
+        console.log(moveMade)
+      };
     };
 
     function computerTurnMedium() {
@@ -383,89 +430,263 @@ function startGame() {
 
       const randomCell = emptyCells[Math.floor(Math.random() * emptyCells.length)];
 
-      let moveMade = false;
+      if (moveMade) {
+        if (marker === 'X') {
+          for (const combination of winningCombinations) {
+            const symbols = combination.map(index => cells[index].children[0]);
+            const xMarkers = symbols.filter(symbol => symbol?.classList.contains('xMarker'));
+            const oMarkers = symbols.filter(symbol => symbol?.classList.contains('oMarker'));
 
-      if (marker === 'X') {
-        for (const combination of winningCombinations) {
-          const symbols = combination.map(index => cells[index].children[0]);
-          const xMarkers = symbols.filter(symbol => symbol?.classList.contains('xMarker'));
-          const oMarkers = symbols.filter(symbol => symbol?.classList.contains('oMarker'));
+            if (xMarkers.length === 0 && oMarkers.length === 2) {
+              const emptyCellIndex = combination.find(index => !cells[index].children[0]);
+              if (emptyCellIndex !== undefined) {
+                cells[emptyCellIndex].appendChild(oSvg);
+                checkWinCondition(cells);
+                console.log('i made a move to win! Cell:', emptyCellIndex);
+                console.log(symbols.every(symbol => symbol?.classList.contains('oMarker')));
+                prio = true;
+                break;
+              }
+              console.log(oMarkers.length + 'oMarker length')
+            }
 
-          if (oMarkers.length >= 2) {
-            const emptyCellIndex = combination.find(index => !cells[index].children[0]);
-            if (emptyCellIndex !== undefined) {
-              cells[emptyCellIndex].appendChild(oSvg);
-              checkWinCondition(cells);
-              console.log('i made a move to win!');
-              moveMade = true;
-              break;
+            if (xMarkers.length === 2 && oMarkers.length === 0) {
+              const emptyCellIndex = combination.find(index => !cells[index].children[0]);
+              if (emptyCellIndex !== undefined) {
+                cells[emptyCellIndex].appendChild(oSvg);
+                checkWinCondition(cells);
+                console.log('i made a move to defend! Cell:', emptyCellIndex);
+                prio = true;
+                break;
+              }
+              console.log(xMarkers.length + 'xMarker length')
             }
           }
 
-          if (xMarkers.length >= 2) {
-            const emptyCellIndex = combination.find(index => !cells[index].children[0]);
-            if (emptyCellIndex !== undefined) {
-              cells[emptyCellIndex].appendChild(oSvg);
-              checkWinCondition(cells);
-              console.log('i made a move to defend!');
-              moveMade = true;
-              break;
-            }
-          }
+          if (!prio) {
+            randomCell.appendChild(oSvg);
+            console.log('i made a random move!!!', randomCell);
+            console.log('Cell:', randomCell.dataset.index); // Log the random move
+            checkWinCondition(cells);
+          }   
+          moveMade = false;     
         }
 
-        if (!moveMade) {
-          randomCell.appendChild(oSvg);
-          console.log('i made a random move!!!')
-          checkWinCondition(cells);
-        }
+        else if (marker === 'O') {
+          for (const combination of winningCombinations) {
+            const symbols = combination.map(index => cells[index].children[0]);
+            const xMarkers = symbols.filter(symbol => symbol?.classList.contains('xMarker'));
+            const oMarkers = symbols.filter(symbol => symbol?.classList.contains('oMarker'));    
+
+            if (xMarkers.length === 0 && oMarkers.length === 2) {
+              const emptyCellIndex = combination.find(index => !cells[index].children[0]);
+              if (emptyCellIndex !== undefined) {
+                cells[emptyCellIndex].appendChild(xSvg);
+                checkWinCondition(cells);
+                console.log('i made a move to defend! Cell:', emptyCellIndex);
+                prio = true;
+                break;
+              }
+              console.log(xMarkers.length + 'xMarker length')
+            } 
+
+            if (xMarkers.length === 2 && oMarkers.length === 0 ) {
+            const emptyCellIndex = combination.find(index => !cells[index].children[0]);
+              if (emptyCellIndex !== undefined) {
+                cells[emptyCellIndex].appendChild(xSvg);
+                checkWinCondition(cells);
+                console.log('i made a move to win! Cell:', emptyCellIndex);
+                console.log(symbols.every(symbol => symbol?.classList.contains('oMarker')));
+                prio = true;
+                break;
+              }
+            console.log(oMarkers.length + 'oMarker length')           
+            }
+          }
+          if (!prio) {
+            randomCell.appendChild(xSvg);
+            console.log('i made a random move!!!', randomCell);
+            console.log('Cell:', randomCell.dataset.index); // Log the random move
+            checkWinCondition(cells);
+          }
+          moveMade = false;
+        };
+      };
+    };
+
+    function computerTurnHard() {
+      const emptyCells = Array.from(cells).filter(cell => !cell.children[0]);
+      const randomCell = emptyCells[Math.floor(Math.random() * emptyCells.length)];
+
+      if (emptyCells.length === 0) {
+        return;
       }
+    
+      if (moveMade) {
+        if (marker === 'X') {
+          for (const combination of winningCombinations) {
+            const symbols = combination.map(index => cells[index].children[0]);
+            const xMarkers = symbols.filter(symbol => symbol?.classList.contains('xMarker'));
+            const oMarkers = symbols.filter(symbol => symbol?.classList.contains('oMarker'));
+        
+            if (xMarkers.length === 0 && oMarkers.length === 2) {
+              const emptyCellIndex = combination.find(index => !cells[index].children[0]);
+              if (emptyCellIndex !== undefined) {
+                cells[emptyCellIndex].appendChild(oSvg);
+                checkWinCondition(cells);
+                console.log('I made a move to win! Cell:', emptyCellIndex);
+                prio = true;
+                break;
+              }
+            }
 
-      else if (marker === 'O') {
-        for (const combination of winningCombinations) {
-          const symbols = combination.map(index => cells[index].children[0]);
-          const xMarkers = symbols.filter(symbol => symbol?.classList.contains('xMarker'));
-          const oMarkers = symbols.filter(symbol => symbol?.classList.contains('oMarker'));    
-
-          if (xMarkers.length >= 2) {
-            const emptyCellIndex = combination.find(index => !cells[index].children[0]);
-            if (emptyCellIndex !== undefined) {
-              cells[emptyCellIndex].appendChild(xSvg);
-              checkWinCondition(cells);
-              console.log('i made a move to win!')
-              moveMade = true;
-              break;
+            if (xMarkers.length === 2 && oMarkers.length === 0) {
+              const emptyCellIndex = combination.find(index => !cells[index].children[0]);
+              if (emptyCellIndex !== undefined) {
+                cells[emptyCellIndex].appendChild(oSvg);
+                checkWinCondition(cells);
+                console.log('I made a move to block! Cell:', emptyCellIndex);
+                prio = true;
+                break;
+              }
             }
           }
-          else if (oMarkers.length >= 2) {
-            const emptyCellIndex = combination.find(index => !cells[index].children[0]);
-            if (emptyCellIndex !== undefined) {
-              cells[emptyCellIndex].appendChild(xSvg);
+
+          if (!prio) {
+            const centerCell = cells[4];
+            if (!centerCell.children[0]) {
+              centerCell.appendChild(oSvg);
               checkWinCondition(cells);
-              console.log('i made a move to defend!')
-              moveMade = true;
-              break;
+              console.log('I took the center cell.');
+              prio = true;
             }
           }
+        
+          if (!prio) {
+            const cornerCells = [cells[0], cells[2], cells[6], cells[8]];
+            const cornerSymbols = cornerCells.map(corner => corner.children[0]);
+            const playerCorners = cornerSymbols.filter(symbol => symbol?.classList.contains('xMarker'));
+            if (playerCorners.length === 2 && cells[4].children[0] && !cells[4].children[0].classList.contains('xMarker')) {
+              const nonCornerCells = [cells[1], cells[3], cells[5], cells[7]];
+              const emptyNonCornerCells = nonCornerCells.filter(cell => !cell.children[0]);
+              const randomNonCornerCell = emptyNonCornerCells[Math.floor(Math.random() * emptyNonCornerCells.length)];
+              if (emptyNonCornerCells.length > 0) {
+                randomNonCornerCell.appendChild(oSvg);
+                checkWinCondition(cells);
+                console.log('I took a non-corner cell!');
+                console.log(emptyNonCornerCells)
+                prio = true;
+              }
+            }
+          }
+
+          if (!prio) {
+            const cornerCells = [cells[0], cells[2], cells[6], cells[8]]; 
+            const emptyCorners = cornerCells.filter(cell => !cell.children[0]); 
+            if (emptyCorners.length > 0) {
+              const randomCorner = emptyCorners[Math.floor(Math.random() * emptyCorners.length)];
+              randomCorner.appendChild(oSvg);
+              checkWinCondition(cells); 
+              console.log('I took a corner cell.'); 
+              prio = true; 
+            } 
+          }
+          
+          if (!prio) {
+            const nonCornerCells = [cells[1], cells[3], cells[5], cells[7]];
+            const emptyNonCornerCells = nonCornerCells.filter(cell => !cell.children[0]);
+            const cornerCells = [cells[0], cells[2], cells[6], cells[8]]; 
+            const emptyCorners = cornerCells.filter(cell => !cell.children[0]);
+            if (!emptyNonCornerCells.length > 0 && emptyCorners.length > 0) {
+              randomCell.appendChild(oSvg);
+              console.log('i made a random move!!!', randomCell);
+              console.log('Cell:', randomCell.dataset.index); // Log the random move
+              checkWinCondition(cells);
+            }
+          }
+          moveMade = false;
         }
-        if (!moveMade) {
-          randomCell.appendChild(xSvg);
-          console.log('i made a random move!!!')
-          checkWinCondition(cells);
+
+        if (marker === 'O') {
+          for (const combination of winningCombinations) {
+            const symbols = combination.map(index => cells[index].children[0]);
+            const xMarkers = symbols.filter(symbol => symbol?.classList.contains('xMarker'));
+            const oMarkers = symbols.filter(symbol => symbol?.classList.contains('oMarker'));
+            
+            if (xMarkers.length === 2 && oMarkers.length === 0) {
+              const emptyCellIndex = combination.find(index => !cells[index].children[0]);
+              if (emptyCellIndex !== undefined) {
+                cells[emptyCellIndex].appendChild(xSvg);
+                checkWinCondition(cells);
+                console.log('I made a move to win! Cells:', emptyCellIndex);
+                prio = true;
+                break;
+              }
+            }
+
+            if (xMarkers.length === 0 && oMarkers.length === 2) {
+              const emptyCellIndex = combination.find(index => !cells[index].children[0]);
+              if (emptyCellIndex !== undefined) {
+                cells[emptyCellIndex].appendChild(xSvg);
+                checkWinCondition(cells);
+                console.log('I made a move to block! Cells:', emptyCellIndex);
+                prio = true;
+                break;
+              }
+            }
+          }
+
+          if (!prio) {
+            const centerCell = cells[4];
+            const cornerCells = [cells[0], cells[2], cells[6], cells[8]]; 
+            const emptyCorners = cornerCells.filter(cell => !cell.children[0]); 
+            if (emptyCorners.length > 0 && !centerCell.children[0]) {
+              const randomCorner = emptyCorners[Math.floor(Math.random() * emptyCorners.length)];
+              randomCorner.appendChild(xSvg);
+              checkWinCondition(cells); 
+              console.log('I took a corner cell.'); 
+              prio = true;
+            } 
+            if (!prio && emptyCorners.length === 3 && centerCell.children) {
+              const computerFirstMoveIndex = Array.from(cells).findIndex(cell => cell.children[0] && cell.children[0].classList.contains('xMarker'));
+              let oppositeCornerIndex;
+              if (computerFirstMoveIndex === 0) {
+                oppositeCornerIndex = 8;
+              }
+              else if (computerFirstMoveIndex === 2) {
+                oppositeCornerIndex = 6;
+              }
+              else if (computerFirstMoveIndex === 6) {
+                oppositeCornerIndex = 2;
+              }
+              else if (computerFirstMoveIndex === 8) {
+                oppositeCornerIndex = 0;
+              }
+
+              if (!cells[oppositeCornerIndex].children[0]) {
+                cells[oppositeCornerIndex].appendChild(xSvg);
+                checkWinCondition(cells);
+                console.log('I took the opposite corner');
+              }
+            }
+          }
+          moveMade = false;
         }
       }
     };
-
+  
     function checkWinCondition(cells) {
       for (const combination of winningCombinations) {
         const symbols = combination.map(index => cells[index].children[0]);
         if (symbols.every(symbol => symbol?.classList.contains('xMarker'))) {
           marker = 'X';
+          console.log('Winning combination: ', combination);
           declareWinner();
           return;
         } 
         if (symbols.every(symbol => symbol?.classList.contains('oMarker'))) {
           marker = 'O';
+          console.log('Winning combination: ', combination);
           declareWinner();
           return;
         }
@@ -477,7 +698,7 @@ function startGame() {
         };
       };
     };
-  });
+  })
 };
 
 function declareWinner() {
@@ -497,6 +718,8 @@ function resetGame() {
   });
   marker = defaultState;
   announceWinner.innerHTML = '';
+  moveMade = false;
+  prio = false;
   if (marker === 'O') {
     computerFirstMove();
   };
