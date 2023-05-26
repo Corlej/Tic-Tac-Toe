@@ -5,13 +5,14 @@ let difficulty = '';
 let moveMade = false;
 let firstMove = false;
 let prio = false;
+let winPrio = false;
+
 const winningCombinations = [
   [0, 1, 2], [3, 4, 5], [6, 7, 8],
   [0, 3, 6], [1, 4, 7], [2, 5, 8],
   [0, 4, 8], [2, 4, 6]
 ];
 
-// Get references to HTML elements
 const singlePlayerBtn = document.getElementById('singlePlayerBtn');
 const twoPlayerBtn = document.getElementById('twoPlayerBtn');
 const xMarkerBtn = document.getElementById('x');
@@ -22,13 +23,14 @@ const hardBtn = document.getElementById('hardBtn');
 const startBtn = document.getElementById('startBtn');
 const xMarker = document.getElementById('x').querySelector('path');
 const oMarker = document.getElementById('o').querySelector('path');
+const buttons = document.getElementById('buttons');
+const backBtn = document.getElementById('backBtn');
+const backArrow = document.getElementById('backArrow');
 const resetBtn = document.getElementById('resetButton');
-const notArrow = document.getElementsByClassName('notArrow')[0];
-const arrow = document.getElementsByClassName('arrow')[0];
+const notResetArrow = document.getElementsByClassName('notArrow')[0];
+const resetArrow = document.getElementsByClassName('arrow')[0];
 const cells = document.querySelectorAll('.cell');
 const announceWinner = document.createElement('div');
-
-//variables to alter HTML elements//
 const playerSelector = document.getElementById('playerSelector');
 const markerSelector = document.getElementById('markerSelector');
 const difficultySelector = document.getElementById('difficultySelector');
@@ -39,6 +41,9 @@ const onePlayerButtonSvg = document.getElementById('singlePlayerBtn').querySelec
 const twoPlayerButtonSvg = document.getElementById('twoPlayerBtn').querySelectorAll('path');
 const markerGroup = document.getElementById('markerGroup');
 const difficultyGroup = document.getElementById('difficultyGroup');
+const container = document.querySelector('.container');
+const board = document.querySelector('.board');
+const startButton = document.querySelector('.startButton');
 
 //event listeners//
 document.getElementById('easyBtn').addEventListener('click', easyActive);
@@ -47,8 +52,14 @@ document.getElementById('hardBtn').addEventListener('click', hardActive);
 
 // Add event listeners to buttons
 
+backBtn.addEventListener('click', () => {
+  openMenuColors();
+  resetGame();
+  openMenu();
+})
+
 resetBtn.addEventListener('click', () => {
-  resetColors();
+  resetBtnColors();
   resetGame();
 });
 
@@ -59,15 +70,25 @@ document.addEventListener('keydown', (event) => {
   }
 });
 
-function resetColors() {
-  arrow.style.fill = 'var(--fourth-color)';
-  arrow.style.stroke = 'var(--fourth-color)';
-  notArrow.style.stroke = 'var(--fourth-color)';
+function openMenuColors() {
+  backArrow.style.fill = 'var(--fourth-color)';
+  backArrow.style.stroke = 'var(--fourth-color)';
   
   setTimeout(() => {
-    arrow.style.fill = 'var(--third-color)';
-    arrow.style.stroke = 'var(--third-color)';
-    notArrow.style.stroke = 'var(--third-color)';
+    backArrow.style.fill = 'var(--third-color)';
+    backArrow.style.stroke = 'var(--third-color)';
+  }, 100);
+}
+
+function resetBtnColors() {
+  resetArrow.style.fill = 'var(--fourth-color)';
+  resetArrow.style.stroke = 'var(--fourth-color)';
+  notResetArrow.style.stroke = 'var(--fourth-color)';
+  
+  setTimeout(() => {
+    resetArrow.style.fill = 'var(--third-color)';
+    resetArrow.style.stroke = 'var(--third-color)';
+    notResetArrow.style.stroke = 'var(--third-color)';
   }, 100);
 }
 
@@ -252,17 +273,15 @@ function computerFirstMove() {
 
 //probably needs adjusted//
 function showBoard() {
-  let container = document.querySelector('.container');
-  let board = document.querySelector('.board');
-  let startButton = document.querySelector('.startButton');
   startButton.addEventListener('animationend', removeSettings);
-  startButton.addEventListener('animationend', addResetButton);
+  startButton.addEventListener('animationend', addButtons);
   function removeSettings() {
     container.style.display = 'none';
     board.style.display = 'flex';
   };
-  function addResetButton() {
-    resetBtn.style.display = 'block';
+  function addButtons() {
+    buttons.style.display = 'flex';
+
   }
   if (firstMove === true) {
     computerFirstMove();
@@ -307,8 +326,22 @@ function startGame() {
     oSvgHover.setAttribute('class', 'oSvgHover');
     oSvgHover.innerHTML = `<path d='M8,2a6,6,0,1,0,6,6A6,6,0,0,0,8,2Zm0,9.42857A3.42857,3.42857,0,1,1,11.42857,8,3.42857,3.42857,0,0,1,8,11.42857Z'/>`;
     
+    function removeHover() {
+      cells.forEach(otherCell => {
+        const xSvgHovers = otherCell.querySelectorAll('.xSvgHover');
+        const oSvgHovers = otherCell.querySelectorAll('.oSvgHover');
+        xSvgHovers.forEach(xSvgHover => {
+          otherCell.removeChild(xSvgHover);
+        });
+        oSvgHovers.forEach(oSvgHover => {
+          otherCell.removeChild(oSvgHover);
+        });
+      });
+    }
+
     if (!moveMade) {
       cell.addEventListener('mouseover', () => {
+
         if (marker === 'X') {
           if(cell.contains(oSvgHover)) {
             cell.removeChild(oSvgHover);
@@ -332,16 +365,7 @@ function startGame() {
           return;
         }
         else if (marker === 'X') {
-          cells.forEach(otherCell => {
-            const xSvgHovers = otherCell.querySelectorAll('.xSvgHover');
-            const oSvgHovers = otherCell.querySelectorAll('.oSvgHover');
-            xSvgHovers.forEach(xSvgHover => {
-              otherCell.removeChild(xSvgHover);
-            });
-            oSvgHovers.forEach(oSvgHover => {
-              otherCell.removeChild(oSvgHover);
-            });
-          });
+          removeHover();
           if (cell.querySelector('.xMarker') || cell.querySelector ('.oMarker')) {
             return;
           }
@@ -367,16 +391,7 @@ function startGame() {
           }
         }
         else if (marker === 'O') {
-          cells.forEach(otherCell => {
-            const xSvgHovers = otherCell.querySelectorAll('.xSvgHover');
-            const oSvgHovers = otherCell.querySelectorAll('.oSvgHover');
-            xSvgHovers.forEach(xSvgHover => {
-              otherCell.removeChild(xSvgHover);
-            });
-            oSvgHovers.forEach(oSvgHover => {
-              otherCell.removeChild(oSvgHover);
-            });
-          });
+          removeHover();
           if (cell.querySelector('.xMarker') || cell.querySelector ('.oMarker')) {
             return;
           }
@@ -404,15 +419,21 @@ function startGame() {
     
     function computerTurnEasy() {
       if (moveMade) {
-        const emptyCells = Array.from(cells).filter(cell => !cell.children[0]);
+        const emptyCells = Array.from(cells).filter(cell => {
+          const hasXMarker = cell.querySelector('.xMarker');
+          const hasOMarker = cell.querySelector('.oMarker');
+          return !hasXMarker && !hasOMarker;
+        });        
         if (emptyCells.length === 0) {
           return;
         }
         const randomCell = emptyCells[Math.floor(Math.random() * emptyCells.length)];
         if (marker === 'X') {
+          removeHover();
           randomCell.appendChild(oSvg);
         }
         if (marker === 'O') {
+          removeHover();
           randomCell.appendChild(xSvg);
         }
         moveMade = false;
@@ -422,8 +443,12 @@ function startGame() {
     };
 
     function computerTurnMedium() {
-      const emptyCells = Array.from(cells).filter(cell => !cell.children[0]);
-
+      const emptyCells = Array.from(cells).filter(cell => {
+        const hasXMarker = cell.querySelector('.xMarker');
+        const hasOMarker = cell.querySelector('.oMarker');
+        return !hasXMarker && !hasOMarker;
+      });
+      
       if (emptyCells.length === 0) {
         return;
       }
@@ -438,8 +463,14 @@ function startGame() {
             const oMarkers = symbols.filter(symbol => symbol?.classList.contains('oMarker'));
 
             if (xMarkers.length === 0 && oMarkers.length === 2) {
-              const emptyCellIndex = combination.find(index => !cells[index].children[0]);
-              if (emptyCellIndex !== undefined) {
+              const emptyCellIndex = combination.find(index => {
+                const cell = cells[index];
+                const xMarker = cell.querySelector('.xMarker');
+                const oMarker = cell.querySelector('.oMarker');
+                return !xMarker && !oMarker;
+              });
+                if (emptyCellIndex !== undefined) {
+                removeHover();
                 cells[emptyCellIndex].appendChild(oSvg);
                 checkWinCondition(cells);
                 console.log('i made a move to win! Cell:', emptyCellIndex);
@@ -451,8 +482,14 @@ function startGame() {
             }
 
             if (xMarkers.length === 2 && oMarkers.length === 0) {
-              const emptyCellIndex = combination.find(index => !cells[index].children[0]);
+              const emptyCellIndex = combination.find(index => {
+                const cell = cells[index];
+                const xMarker = cell.querySelector('.xMarker');
+                const oMarker = cell.querySelector('.oMarker');
+                return !xMarker && !oMarker;
+              });
               if (emptyCellIndex !== undefined) {
+                removeHover();
                 cells[emptyCellIndex].appendChild(oSvg);
                 checkWinCondition(cells);
                 console.log('i made a move to defend! Cell:', emptyCellIndex);
@@ -464,6 +501,7 @@ function startGame() {
           }
 
           if (!prio) {
+            removeHover();
             randomCell.appendChild(oSvg);
             console.log('i made a random move!!!', randomCell);
             console.log('Cell:', randomCell.dataset.index); // Log the random move
@@ -479,8 +517,14 @@ function startGame() {
             const oMarkers = symbols.filter(symbol => symbol?.classList.contains('oMarker'));    
 
             if (xMarkers.length === 0 && oMarkers.length === 2) {
-              const emptyCellIndex = combination.find(index => !cells[index].children[0]);
+              const emptyCellIndex = combination.find(index => {
+                const cell = cells[index];
+                const xMarker = cell.querySelector('.xMarker');
+                const oMarker = cell.querySelector('.oMarker');
+                return !xMarker && !oMarker;
+              });
               if (emptyCellIndex !== undefined) {
+                removeHover();
                 cells[emptyCellIndex].appendChild(xSvg);
                 checkWinCondition(cells);
                 console.log('i made a move to defend! Cell:', emptyCellIndex);
@@ -491,8 +535,14 @@ function startGame() {
             } 
 
             if (xMarkers.length === 2 && oMarkers.length === 0 ) {
-            const emptyCellIndex = combination.find(index => !cells[index].children[0]);
+              const emptyCellIndex = combination.find(index => {
+                const cell = cells[index];
+                const xMarker = cell.querySelector('.xMarker');
+                const oMarker = cell.querySelector('.oMarker');
+                return !xMarker && !oMarker;
+              });
               if (emptyCellIndex !== undefined) {
+                removeHover();
                 cells[emptyCellIndex].appendChild(xSvg);
                 checkWinCondition(cells);
                 console.log('i made a move to win! Cell:', emptyCellIndex);
@@ -504,6 +554,7 @@ function startGame() {
             }
           }
           if (!prio) {
+            removeHover();
             randomCell.appendChild(xSvg);
             console.log('i made a random move!!!', randomCell);
             console.log('Cell:', randomCell.dataset.index); // Log the random move
@@ -515,7 +566,11 @@ function startGame() {
     };
 
     function computerTurnHard() {
-      const emptyCells = Array.from(cells).filter(cell => !cell.children[0]);
+      const emptyCells = Array.from(cells).filter(cell => {
+        const xMarker = cell.querySelector('.xMarker');
+        const oMarker = cell.querySelector('.oMarker');
+        return !xMarker && !oMarker;
+      });
       const randomCell = emptyCells[Math.floor(Math.random() * emptyCells.length)];
 
       if (emptyCells.length === 0) {
@@ -530,19 +585,42 @@ function startGame() {
             const oMarkers = symbols.filter(symbol => symbol?.classList.contains('oMarker'));
         
             if (xMarkers.length === 0 && oMarkers.length === 2) {
-              const emptyCellIndex = combination.find(index => !cells[index].children[0]);
+              const emptyCellIndex = combination.find(index => {
+                const cell = cells[index];
+                const xMarker = cell.querySelector('.xMarker');
+                const oMarker = cell.querySelector('.oMarker');
+                return !xMarker && !oMarker;
+              });
               if (emptyCellIndex !== undefined) {
+                removeHover();
                 cells[emptyCellIndex].appendChild(oSvg);
                 checkWinCondition(cells);
                 console.log('I made a move to win! Cell:', emptyCellIndex);
                 prio = true;
+                winPrio = true;
                 break;
               }
             }
+          }
+          if (winPrio === true) {
+            return;
+          }
 
+          for (const combination of winningCombinations) {
+            const symbols = combination.map(index => cells[index].children[0]);
+            const xMarkers = symbols.filter(symbol => symbol?.classList.contains('xMarker'));
+            const oMarkers = symbols.filter(symbol => symbol?.classList.contains('oMarker'));
+          
             if (xMarkers.length === 2 && oMarkers.length === 0) {
-              const emptyCellIndex = combination.find(index => !cells[index].children[0]);
+              const emptyCellIndex = combination.find(index => {
+                const cell = cells[index];
+                const xMarker = cell.querySelector('.xMarker');
+                const oMarker = cell.querySelector('.oMarker');
+                return !xMarker && !oMarker;
+              });
+
               if (emptyCellIndex !== undefined) {
+                removeHover();
                 cells[emptyCellIndex].appendChild(oSvg);
                 checkWinCondition(cells);
                 console.log('I made a move to block! Cell:', emptyCellIndex);
@@ -554,7 +632,8 @@ function startGame() {
 
           if (!prio) {
             const centerCell = cells[4];
-            if (!centerCell.children[0]) {
+            if (!centerCell.querySelector('.xMarker') && !centerCell.querySelector('.oMarker')) {
+              removeHover();
               centerCell.appendChild(oSvg);
               checkWinCondition(cells);
               console.log('I took the center cell.');
@@ -568,9 +647,14 @@ function startGame() {
             const playerCorners = cornerSymbols.filter(symbol => symbol?.classList.contains('xMarker'));
             if (playerCorners.length === 2 && cells[4].children[0] && !cells[4].children[0].classList.contains('xMarker')) {
               const nonCornerCells = [cells[1], cells[3], cells[5], cells[7]];
-              const emptyNonCornerCells = nonCornerCells.filter(cell => !cell.children[0]);
+              const emptyNonCornerCells = nonCornerCells.filter(cell => {
+                const hasXMarker = cell.querySelector('.xMarker');
+                const hasOMarker = cell.querySelector('.oMarker');
+                return !hasXMarker && !hasOMarker;
+              });
               const randomNonCornerCell = emptyNonCornerCells[Math.floor(Math.random() * emptyNonCornerCells.length)];
               if (emptyNonCornerCells.length > 0) {
+                removeHover();
                 randomNonCornerCell.appendChild(oSvg);
                 checkWinCondition(cells);
                 console.log('I took a non-corner cell!');
@@ -582,9 +666,14 @@ function startGame() {
 
           if (!prio) {
             const cornerCells = [cells[0], cells[2], cells[6], cells[8]]; 
-            const emptyCorners = cornerCells.filter(cell => !cell.children[0]); 
+            const emptyCorners = cornerCells.filter(cell => {
+              const hasXMarker = cell.querySelector('.xMarker');
+              const hasOMarker = cell.querySelector('.oMarker');
+              return !hasXMarker && !hasOMarker;
+            });
             if (emptyCorners.length > 0) {
               const randomCorner = emptyCorners[Math.floor(Math.random() * emptyCorners.length)];
+              removeHover();
               randomCorner.appendChild(oSvg);
               checkWinCondition(cells); 
               console.log('I took a corner cell.'); 
@@ -596,8 +685,13 @@ function startGame() {
             const nonCornerCells = [cells[1], cells[3], cells[5], cells[7]];
             const emptyNonCornerCells = nonCornerCells.filter(cell => !cell.children[0]);
             const cornerCells = [cells[0], cells[2], cells[6], cells[8]]; 
-            const emptyCorners = cornerCells.filter(cell => !cell.children[0]);
+            const emptyCorners = cornerCells.filter(cell => {
+              const hasXMarker = cell.querySelector('.xMarker');
+              const hasOMarker = cell.querySelector('.oMarker');
+              return !hasXMarker && !hasOMarker;
+            });
             if (!emptyNonCornerCells.length > 0 && emptyCorners.length > 0) {
+              removeHover();
               randomCell.appendChild(oSvg);
               console.log('i made a random move!!!', randomCell);
               console.log('Cell:', randomCell.dataset.index); // Log the random move
@@ -616,6 +710,7 @@ function startGame() {
             if (xMarkers.length === 2 && oMarkers.length === 0) {
               const emptyCellIndex = combination.find(index => !cells[index].children[0]);
               if (emptyCellIndex !== undefined) {
+                removeHover();
                 cells[emptyCellIndex].appendChild(xSvg);
                 checkWinCondition(cells);
                 console.log('I made a move to win! Cells:', emptyCellIndex);
@@ -627,6 +722,7 @@ function startGame() {
             if (xMarkers.length === 0 && oMarkers.length === 2) {
               const emptyCellIndex = combination.find(index => !cells[index].children[0]);
               if (emptyCellIndex !== undefined) {
+                removeHover();
                 cells[emptyCellIndex].appendChild(xSvg);
                 checkWinCondition(cells);
                 console.log('I made a move to block! Cells:', emptyCellIndex);
@@ -642,6 +738,7 @@ function startGame() {
             const emptyCorners = cornerCells.filter(cell => !cell.children[0]); 
             if (emptyCorners.length > 0 && !centerCell.children[0]) {
               const randomCorner = emptyCorners[Math.floor(Math.random() * emptyCorners.length)];
+              removeHover();
               randomCorner.appendChild(xSvg);
               checkWinCondition(cells); 
               console.log('I took a corner cell.'); 
@@ -664,6 +761,7 @@ function startGame() {
               }
 
               if (!cells[oppositeCornerIndex].children[0]) {
+                removeHover();
                 cells[oppositeCornerIndex].appendChild(xSvg);
                 checkWinCondition(cells);
                 console.log('I took the opposite corner');
@@ -703,7 +801,7 @@ function startGame() {
 
 function declareWinner() {
   announceWinner.setAttribute('class', 'winner');
-  document.querySelector('.content').appendChild(announceWinner);
+  document.querySelector('.content').insertBefore(announceWinner, document.querySelector('.content').children[2].nextSibling)
   if (marker === ('X') || ('O')) {
     announceWinner.innerHTML = marker + ' IS THE WINNER!';
   }
@@ -717,10 +815,22 @@ function resetGame() {
     }
   });
   marker = defaultState;
-  announceWinner.innerHTML = '';
+  announceWinner.remove();
   moveMade = false;
   prio = false;
+  winPrio = false;
   if (marker === 'O') {
     computerFirstMove();
   };
+};
+
+function openMenu() {
+  setTimeout(() => {
+  board.style.display = 'none';
+  container.style.display = 'flex';
+  buttons.style.display = 'none';
+  onePlayerActive();
+  xActive();
+  easyActive();
+  }, 200)
 };
